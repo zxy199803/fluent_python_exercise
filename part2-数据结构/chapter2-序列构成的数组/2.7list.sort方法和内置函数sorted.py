@@ -10,7 +10,13 @@ Key 如key=str.lower实现忽略大小写排序,key=len基于字符串长度排�
 fruits = ['grape', 'raspberry', 'apple', 'banana']
 print(sorted(fruits))
 print(fruits)
-print(sorted(fruits,key=len))
-print(sorted(fruits,key=len,reverse=True))  # 不是sorted(fruits,key=len)的完全反转，在长度一样时，grape和apple相对位置不变
+print(sorted(fruits, key=len))
+print(sorted(fruits, key=len, reverse=True))  # 不是sorted(fruits,key=len)的完全反转，在长度一样时，grape和apple相对位置不变
 fruits.sort()
 print(fruits)
+
+l = [28, 14, '28', 5, '9', '1', 0, 6, '23', 19]
+sorted(l, key=int)
+# [0, '1', 5, 6, '9', 14, 19, '23', 28, '28']
+sorted(l, key=str)
+# [0, '1', 14, 19, '23', 28, '28', 5, 6, '9']
