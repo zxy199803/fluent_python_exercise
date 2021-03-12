@@ -10,5 +10,12 @@
 越是相似但不相等的对象，其散列值的差别越大
 
 2.散列表算法
+my_dict[search_key]
+首先调用hash(search_key)计算散列值，使用散列值的最低几位数字当作偏移量在散列表查找表元
+表元为空,抛出keyError异常
+不为空，表元中有found_key:found_value，检验search_key==found_key是否为真
+search_key，found_key相等，返回found_value
+不相等则散列冲突，在散列值中另取几位，处理后得到新的数字当作索引寻找表元（多数情况下不会冲突）
 
+添加新元素和更新键值操作与上述基本相同，插入新值时按照拥挤程度决定是否重新分配内存
 """
