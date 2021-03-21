@@ -22,7 +22,7 @@ class Vector2d:
         return (i for i in (self.x, self.y))  # 将Vector2d实例变成可迭代对象，这样才能拆包
 
     def __repr__(self):
-        class_name = type(self).__name__
+        class_name = type(self).__name__  # 便于修改typecode时候直接继承__repr__方法
         return '{}({!r},{!r})'.format(class_name, *self)  # Vector2d实例是可迭代对象，可以拆包
 
     def __str__(self):
