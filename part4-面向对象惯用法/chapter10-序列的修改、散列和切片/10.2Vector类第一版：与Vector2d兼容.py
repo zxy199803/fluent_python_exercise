@@ -5,10 +5,13 @@ from array import array
 import reprlib
 import math
 import numbers
+import functools
+import operator
 
 
 class Vector:
     typecpde = 'd'
+    shortcut_names = 'xyzt'
 
     def __init__(self, components):
         self._components = array(self.typecpde, components)  # array效率比List高，其背后存的是字节表述。受保护对象
@@ -28,7 +31,23 @@ class Vector:
         return bytes([ord(self.typecpde)]) + bytes(self._components)
 
     def __eq__(self, other):
-        return tuple(self) == tuple(other)
+        # return tuple(self) == tuple(other)  # 要构建两个元组，效率低
+
+        # 提高比较效率
+        # if len(self) != len(other):  # 一个输入耗尽，zip函数会停止生成值且不发出警告
+        #     return False
+        # for a, b in zip(self, other):
+        #     if a != b:
+        #         return False
+        # return True
+
+        # 更简单写法
+        return len(self) == len(other) and all(a == b for a, b in zip(self, other))
+
+    def __hash__(self):
+        # hashes = (hash(x) for x in self._components)
+        hashes = map(hash, self._components)  # map函数是惰性的，会创建一个生成器，按需产出结果，因此可以节省内存
+        return functools.reduce(operator.xor, hashes, 0)  # 0是初始值，防止序列为空
 
     def __abs__(self):
         return math.sqrt(sum(x * x for x in self))
@@ -60,6 +79,30 @@ class Vector:
         else:
             msg = '{cls.__name__} indices must be integers'
             raise TypeError(msg.format(cls=cls))
+
+    # 动态存取属性
+    def __setattr__(self, name, value):  # 改写了设置属性的逻辑
+        cls = type(self)
+        if len(name) == 1:  # 禁止为单个小写字幕属性赋值，防止与只读属性x,y,z,t混淆
+            if name in cls.shortcut_names:
+                error = 'readonly attribute {attr_name!r}'
+            elif name.islower():
+                error = "can not set attributes 'a' to 'z' in {cls_name!r}"
+            else:
+                error = ''
+            if error:
+                msg = error.format(cls_name=cls.__name__, attr_name=name)
+                raise AttributeError(msg)
+        super().__setattr__(name, value)
+
+    def __getattr__(self, name):  # 仅当对象没有指定名称的属性时才会调用该方法
+        cls = type(self)
+        if len(name) == 1:
+            pos = cls.shortcut_names.find(name)
+            if 0 <= pos < len(self._components):
+                return self._components[pos]
+        msg = '{.__name__!r} object has no attribute {!r}'
+        raise AttributeError(msg.format(cls, name))
 
 
 v1 = Vector([3, 4, 5])
