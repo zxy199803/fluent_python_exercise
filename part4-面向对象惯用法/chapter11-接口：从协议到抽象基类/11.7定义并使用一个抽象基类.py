@@ -12,6 +12,12 @@ Tombola抽象基类有四个方法，
 抽象方法使用@abc.abstractmethod装饰器标记，而且定义体中通常只有文档字符串。与其他方法描述符一起使用时，abstractmethod应放在最里层
 抽象基类可以包含具体方法，具体方法只能依赖抽象基类定义的接口（即只能使用抽象基类中的其他具体方法、抽象方法或特性）
 抽象方法可以有实现代码，即便实现了子类也必须覆盖抽象方法，但在子类中可以使用super()函数调用抽象方法，为它添加功能
+
+白鹅类型的一个基本特性：即便不继承，也有办法把一个类注册为抽象基类的虚拟子类
+注册虚拟子类的方式：在抽象基类上调用register方法，注册的类不会从抽象基类中继承任何方法和属性
+虚拟子类不会继承注册的抽象基类，任何时候也不会检查它是否符合抽象基类的接口，为避免运行错误，虚拟子类要实现所需的全部方法
+
+类的继承关系在特殊的类属性__mro__（即方法解析顺序）中指定，这个属性按顺序列出类及其超类，Python按这个顺序搜索方法
 """
 import abc
 
@@ -74,3 +80,49 @@ class BingoCage(Tomboal):
 
     def __call__(self):
         self.pick()
+
+
+class LotteryBlower(Tomboal):
+
+    def __init__(self,iterable):
+        self._balls = list(iterable)  # 把参数构建成列表
+
+    def load(self, iterable):
+        self._balls.extend(iterable)
+
+    def pick(self):
+        try:
+            position = random.randrange(len(self._balls))
+        except ValueError:
+            raise LookupError('pick from empty LotteryBlower')
+        return self._balls.pop(position)
+
+    def loaded(self):
+        return bool(self._balls)  # 覆盖loaded方法，避免调用inspect方法，避免构建整个有序元组提升速度
+
+    def inspect(self):
+        return tuple(sorted(self._balls))
+
+
+# 虚拟子类
+from random import randrange
+
+@Tomboal.register
+class TomboList(list):
+
+    def pick(self):
+        if self:
+            position = randrange(len(self))
+            return self.pop(position)
+        else:
+            raise LookupError('pop from empty TomboList')
+
+    load = list.extend
+
+    def loaded(self):
+        return bool(self)
+
+    def inspect(self):
+        return tuple(sorted(self))
+
+# 注册后可以用issubclass和isinstance函数判断
